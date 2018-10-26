@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
 	<script src="https://unpkg.com/base-58@0.0.1/Base58.js"></script>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -15,6 +15,7 @@
 	.bordered {
 		border: 1px solid lightgray;
 		border-radius:5px;
+		padding: 10px;
 	}
 	input, select {
 		font-family: inherit;
@@ -65,7 +66,7 @@
 		margin: 0px 5px 0px 0px;
 	}
 	input, select {
-		margin: 0px 10px 0px 0px;
+		margin: 10px;
 		padding: 5px;
 	}
 	.button {
@@ -77,17 +78,105 @@
 	.button:hover {
 		background-color: lightgray;
 	}
-	.add-remove {
+	.load {
 		width: 50px;
 	}
 	.submit {
 		width: 200px;
 	}
+	table {
+		margin: 10px;
+    border-collapse: collapse;
+    /*width: 100%;*/
+	}
+	td, th {
+    border: 1px solid lightgray;
+    padding: 10px;
+    max-width: 300px;
+    overflow: auto;
+    white-space: nowrap;
+	}
+	tr:hover {
+		background-color: lightgray;
+	}
+	#edit-cert, #cert-list {
+		margin: 10px;
+	}
+	#admin {
+		align-items: flex-start;
+	}
 </style>
 </head>
 <body>
 	<div id="app" class="flex-col">
-{{certs}}
+		<div id="header" class="flex-row">
+			<div>
+				<label>Mode:</label>
+				<select v-model="mode">
+					<option value="user">user</option>
+					<option value="admin">admin</option>
+				</select>
+			</div>
+		</div>
+		<div id="check-cert" class="flex-col bordered">
+			Check certificate
+			<div class="flex-row">
+				<label>Type:</label>
+				<select v-model="check.type">
+					<option value="ID">ID</option>
+					<option value="PK">PK</option>
+				</select>
+				<label>Data:</label>
+				<input v-model="check.data" type="text" name="">
+				<input class="submit button" type="submit" value="Check" @click="checkCert">
+			</div>
+			<div class="flex-row bordered">
+				{{ check.result }}
+			</div>
+		</div>
+		<div id="admin" class="flex-row" v-if="mode == 'admin'">
+			<div id="edit-cert" class="flex-col bordered">
+				Certificate edit
+				<div>
+					<label>ID</label>
+					<input v-model="cert.id" type="number" name="">
+				</div>
+				<div>
+					<label>PK</label>
+					<input v-model="cert.owner" type="text" name="">
+				</div>
+				<div>
+					<label>Status</label>
+					<select :value="cert.status" @input="$event.target.value == 'true' ? cert.status = true : cert.status = false">
+						<option value="true">true</option>
+						<option value="false">false</option>
+					</select>
+				</div>
+				<div>
+					<label>Hash</label>
+					<input v-model="cert.hash" type="text" name="">
+				</div>
+				<input class="submit button" type="submit" value="Send" @click="addCert">
+			</div>
+			<div id="cert-list" class="flex-col bordered">
+				<label>Certificates list</label>
+				<input class="submit button" type="submit" value="Update" @click="getCerts">
+				<table>
+					<tr>
+						<td>ID</td>
+						<td>Owner's PK</td>
+						<td>Status</td>
+						<td>Hash</td>
+					</tr>
+					<tr v-for="(item, index) in certs" @click="editCert(index)">
+						<td>{{ item.id }}</td>
+						<td>{{ item.owner }}</td>
+						<td>{{ item.status }}</td>
+						<td>{{ item.hash }}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
 	</div>
 	<script>
 		var app = new Vue({
@@ -100,11 +189,15 @@
 				mode: 'admin',
 				cert: {
 					id: 0,
-					PK: '',
+					owner: '',
 					hash: '',
 					status: true
 				},
-				check: '',
+				check: {
+					type: 'ID',
+					data: '',
+					result: false
+				},
 				certs: []
 			},
 			created: function() {
@@ -117,6 +210,12 @@
 			methods: {
 				checkKeeper: function() {
 					return typeof window.Waves !== 'undefined';
+				},
+				editCert: function(i) {
+					this.cert.id = this.certs[i].id;
+					this.cert.owner = this.certs[i].owner;
+					this.cert.hash = this.certs[i].hash;
+					this.cert.status = this.certs[i].status;
 				},
 				getData: async function() {
 					let rawData = await fetch(this.node + '/addresses/data/' + this.CA);
@@ -145,6 +244,7 @@
 						};
 					});
 					this.certs = certs;
+					return certs;
 				},
 				addCert: async function() {
 					let data = {
@@ -153,10 +253,10 @@
 							tokens: '0.005'
 						},
 						data: [
-							{type: 'string', key: this.cert.id.toString(), value: this.cert.PK},
-							{type: 'string', key: this.cert.PK, value: this.cert.id.toString()},
-							{type: 'binary', key: this.cert.id.toString() + '.hash', value: this.cert.hash},
-							{type: 'boolean', key: this.cert.id.toString() + '.status', value: this.cert.status}
+							{type: 'string', key: this.cert.id, value: this.cert.owner},
+							{type: 'string', key: this.cert.owner, value: this.cert.id},
+							{type: 'binary', key: this.cert.id + '.hash', value: this.cert.hash},
+							{type: 'boolean', key: this.cert.id + '.status', value: this.cert.status}
 						]
 					}
 					await this.signAndPublishTx(data);
@@ -167,27 +267,30 @@
 					});
 					return element;
 				},
-				checkCert: async function(type, text) {
+				checkCert: async function() {
 					let certs = await this.getData();
 					let id = '';
-					switch (type) {
-						case 'id':
-							id = text;
+					switch (this.check.type) {
+						case 'ID':
+							id = this.check.data;
 							break;
 						case 'PK':
-							let data = await this.findByKey(certs, text);
+							let data = await this.findByKey(certs, this.check.data);
 							id = data.value;
 							break;
 						default:
-							id = text;
+							id = this.check.data;
 							break;
 					}
 					let status = await this.findByKey(certs, id + '.status');
+					let result;
 					if (status) {
-						return status.value;
+						result = status.value;
 					} else {
-						return false;
+						result = false;
 					}
+					this.check.result = result;
+					return result;
 				},
 				signTx: async function(type) {
 					let data = this.dataArray[type].data;
