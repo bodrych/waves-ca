@@ -177,6 +177,11 @@
 				</table>
 			</div>
 		</div>
+		<div id="footer" class="flex-col">
+			<a href="https://github.com/bodrych/waves-ca">GitHub</a>
+			<a href="https://forum.wavesplatform.com/t/waves-keeper-beta/3547">Waves Keeper</a>
+			<a :href="'https://testnet.wavesexplorer.com/address/' + CA">CA: {{ CA }}</a>
+		</div>
 	</div>
 	<script>
 		var app = new Vue({
@@ -184,9 +189,10 @@
 			data: {
 				// node: 'https://nodes.wavesplatform.com',
 				node: 'https://testnode1.wavesnodes.com',
-				CA: '3N6mVEULck7uViUaDo1wi98wch9XzYNXriv',
+				CA: '3NBZsCMvJkSDUtVSdYA8mCMn1bwv7fa7zo2',
+				CAPK: '2vet7Phh3JLvc5xRknLoT6YbBsnyU98LywPsER6ixStk',
 				result: '',
-				mode: 'admin',
+				mode: 'user',
 				cert: {
 					id: 0,
 					owner: '',
@@ -201,11 +207,11 @@
 				certs: []
 			},
 			created: function() {
-				// setTimeout(() => {
-				// 	if (!this.checkKeeper()) {
-				// 		alert('Please, install Waves Keeper');
-				// 	}
-				// }, 1000);
+				setTimeout(() => {
+					if (!this.checkKeeper()) {
+						alert('Please, install Waves Keeper');
+					}
+				}, 1000);
 			},
 			methods: {
 				checkKeeper: function() {
@@ -257,7 +263,8 @@
 							{type: 'string', key: this.cert.owner, value: this.cert.id},
 							{type: 'binary', key: this.cert.id + '.hash', value: this.cert.hash},
 							{type: 'boolean', key: this.cert.id + '.status', value: this.cert.status}
-						]
+						],
+						senderPublicKey: this.CAPK
 					}
 					await this.signAndPublishTx(data);
 				},
@@ -291,20 +298,6 @@
 					}
 					this.check.result = result;
 					return result;
-				},
-				signTx: async function(type) {
-					let data = this.dataArray[type].data;
-					let params = {
-						type: type,
-						data: data
-					}
-					try {
-						let res = await window.Waves.signTransaction(params);
-						this.result = res;
-						console.log(res);
-					} catch (err) {
-						alert(err.message);
-					}
 				},
 				signAndPublishTx: async function(data) {
 					let params = {
