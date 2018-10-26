@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.min.js"></script>
+	<script src="https://unpkg.com/base-58@0.0.1/Base58.js"></script>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAABFvgAARb4B0IHyYgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIpSURBVHic5du5edtAFEXhM66HqM/OBGVWexz2ohBO/PhJFJZZ3oLlNkCcP5BIYACByzmPj8fjb+Q1pKgPzjmPwBtASunjdrv9ibiOEICv8c8LCUJwB5iLl0UguAKsxcu8EdwASuJlngguADXxMi8Ec4CWeJkHgilAT7zMGsEMQCNeZolgAqAZL7NCUAewiJdZIKgCWMbLtBHUADziZZoIKgCe8TIthG6AiHiZBkIXQGS8rBehGWAP8bIehCaAPcXLWhGqAfYYL2tBqALYc7ysFqEY4AjxshqEIoAjxctKETYBjhgvK0FYBThyvGwLYRHgDPGyNYRZgDPFy5YQfgCcMV42h/AN4MzxsleEJ8AV4mVfERJcK14mCOmK8bKU0sevaZo+oy8katM0fSaA+/3+O6UUelAhYOMwDO/PP4IXQxiHYXiHl3+DF0F4xsPMF6GTI3yLh4WvwidF+BEPKz+GToYwGw8bP4dPgrAYDwU3RA6OsBoPhbfEDoqwGQ8VN0UPhlAUD5W3xQ+CUBwPDQ9Gdo5QFQ+Nj8Z2ilAdDx0PR3eG0BQPnY/Hd4LQHA8KBySCEbriQemITBBCdzwoHpJyRlCJB+Vjck4IavFgcFDSGEE1HoyOyhohqMeD4WFpZQSTeDA+Lq+EYBYPDi9MdCKYxoPTKzONCObx4PjSVCWCSzw4vzZXiOAWDwEvTm4guMZD0KuzCwju8RD48vQLQkh8+HLO4//zCWH7B6TVRCpVqUZ2AAAAAElFTkSuQmCC" />
+	<title>Waves CA</title>
+	<style>
+	body {
+		font-family: Consolas, monospace;
+		font-size: 14px;
+	}
+	.bordered {
+		border: 1px solid lightgray;
+		border-radius:5px;
+	}
+	input, select {
+		font-family: inherit;
+		font-size: inherit;
+	}
+	select, input[type=text], input[type=number], input[type=checkbox] {
+		border: 1px solid lightgray;
+	}
+	#app {
+		display: flex;
+	}
+	#header > div {
+		padding: 5px;
+	}
+	#params-first > div, #params-second > div, #params-third > div {
+		align-items: center;
+		padding: 5px;
+	}
+	#result, #input-data {
+		padding: 5px;
+		overflow-x: auto;
+		border: 1px solid lightgray;
+		margin: 5px 0px 0px 0px;
+		max-width: 90vw;
+	}
+	#result-wrapper, #input-data-wrapper {
+		margin: 5px;
+	}
+	#result-data-wrapper {
+		align-items:initial;
+	}
+	#footer {
+		padding: 5px;
+	}
+	.flex-row {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+	.flex-col {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+	}
+	label {
+		margin: 0px 5px 0px 0px;
+	}
+	input, select {
+		margin: 0px 10px 0px 0px;
+		padding: 5px;
+	}
+	.button {
+		background-color: white;
+		color: black;
+		border: 1px solid lightgray;
+		transition-duration: 0.4s;
+	}
+	.button:hover {
+		background-color: lightgray;
+	}
+	.add-remove {
+		width: 50px;
+	}
+	.submit {
+		width: 200px;
+	}
+</style>
+</head>
+<body>
+	<div id="app" class="flex-col">
+{{certs}}
+	</div>
+	<script>
+		var app = new Vue({
+			el: '#app',
+			data: {
+				// node: 'https://nodes.wavesplatform.com',
+				node: 'https://testnode1.wavesnodes.com',
+				CA: '3N6mVEULck7uViUaDo1wi98wch9XzYNXriv',
+				result: '',
+				mode: 'admin',
+				cert: {
+					id: 0,
+					PK: '',
+					hash: '',
+					status: true
+				},
+				check: '',
+				certs: []
+			},
+			created: function() {
+				// setTimeout(() => {
+				// 	if (!this.checkKeeper()) {
+				// 		alert('Please, install Waves Keeper');
+				// 	}
+				// }, 1000);
+			},
+			methods: {
+				checkKeeper: function() {
+					return typeof window.Waves !== 'undefined';
+				},
+				getData: async function() {
+					let rawData = await fetch(this.node + '/addresses/data/' + this.CA);
+					let data = await rawData.json();
+					return data;
+				},
+				getCerts: async function() {
+					let data = await this.getData();
+					let filtered = data.filter(item => {
+						if (Number(item.key) > 0) {
+							return true;
+						} else {
+							return false;
+						}
+					});
+					let certs = filtered.map(item => {
+						let status = this.findByKey(data, item.key + '.status');
+						status = status ? status.value : '';
+						let hash = this.findByKey(data, item.key + '.hash');
+						hash = hash ? hash.value : '';
+						return {
+							id: item.key,
+							owner: item.value,
+							status: status,
+							hash: hash
+						};
+					});
+					this.certs = certs;
+				},
+				addCert: async function() {
+					let data = {
+						fee: {
+							assetId: 'WAVES',
+							tokens: '0.005'
+						},
+						data: [
+							{type: 'string', key: this.cert.id.toString(), value: this.cert.PK},
+							{type: 'string', key: this.cert.PK, value: this.cert.id.toString()},
+							{type: 'binary', key: this.cert.id.toString() + '.hash', value: this.cert.hash},
+							{type: 'boolean', key: this.cert.id.toString() + '.status', value: this.cert.status}
+						]
+					}
+					await this.signAndPublishTx(data);
+				},
+				findByKey: function(array, id) {
+					let element = array.find(element => {
+						return element.key == id ? element : false;
+					});
+					return element;
+				},
+				checkCert: async function(type, text) {
+					let certs = await this.getData();
+					let id = '';
+					switch (type) {
+						case 'id':
+							id = text;
+							break;
+						case 'PK':
+							let data = await this.findByKey(certs, text);
+							id = data.value;
+							break;
+						default:
+							id = text;
+							break;
+					}
+					let status = await this.findByKey(certs, id + '.status');
+					if (status) {
+						return status.value;
+					} else {
+						return false;
+					}
+				},
+				signTx: async function(type) {
+					let data = this.dataArray[type].data;
+					let params = {
+						type: type,
+						data: data
+					}
+					try {
+						let res = await window.Waves.signTransaction(params);
+						this.result = res;
+						console.log(res);
+					} catch (err) {
+						alert(err.message);
+					}
+				},
+				signAndPublishTx: async function(data) {
+					let params = {
+						type: 12,
+						data: data
+					}
+					try {
+						let res = await window.Waves.signAndPublishTransaction(params);
+						this.result = res;
+						console.log(res);
+					} catch (err) {
+						alert(err.message);
+						console.log(err);
+					}
+				}
+			}
+		});
+	</script>
+</body>
+</html>
