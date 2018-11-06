@@ -1,7 +1,6 @@
 var app = new Vue({
 	el: '#app',
 	data: {
-		// node: 'https://nodes.wavesplatform.com',
 		node: 'https://testnode1.wavesnodes.com',
 		CA: '3NBZsCMvJkSDUtVSdYA8mCMn1bwv7fa7zo2',
 		CAPK: '2vet7Phh3JLvc5xRknLoT6YbBsnyU98LywPsER6ixStk',
@@ -19,13 +18,6 @@ var app = new Vue({
 			result: false
 		},
 		certs: []
-	},
-	created: function() {
-		setTimeout(() => {
-			if (!this.checkKeeper()) {
-				alert('Please, install Waves Keeper');
-			}
-		}, 1000);
 	},
 	methods: {
 		checkKeeper: function() {
