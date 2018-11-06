@@ -38,7 +38,7 @@ var app = new Vue({
 			this.cert.status = this.certs[i].status;
 		},
 		getData: async function() {
-			let rawData = await fetch(this.node + '/addresses/data/' + this.CA);
+			let rawData = await fetch(`${this.node}/addresses/data/${this.CA}`);
 			let data = await rawData.json();
 			return data;
 		},
@@ -52,9 +52,9 @@ var app = new Vue({
 				}
 			});
 			let certs = filtered.map(item => {
-				let status = this.findByKey(data, item.key + '.status');
+				let status = this.findByKey(data, `${item.key}.status`);
 				status = status ? status.value : '';
-				let hash = this.findByKey(data, item.key + '.hash');
+				let hash = this.findByKey(data, `${item.key}.hash`);
 				hash = hash ? hash.value : '';
 				return {
 					id: item.key,
@@ -75,8 +75,8 @@ var app = new Vue({
 				data: [
 					{type: 'string', key: this.cert.id, value: this.cert.owner},
 					{type: 'string', key: this.cert.owner, value: this.cert.id},
-					{type: 'binary', key: this.cert.id + '.hash', value: this.cert.hash},
-					{type: 'boolean', key: this.cert.id + '.status', value: this.cert.status}
+					{type: 'binary', key: `${this.cert.id}.hash`, value: this.cert.hash},
+					{type: 'boolean', key: `${this.cert.id}.status`, value: this.cert.status}
 				],
 				senderPublicKey: this.CAPK
 			}
@@ -103,7 +103,7 @@ var app = new Vue({
 					id = this.check.data;
 					break;
 			}
-			let status = await this.findByKey(certs, id + '.status');
+			let status = await this.findByKey(certs, `${id}.status`);
 			let result;
 			if (status) {
 				result = status.value;
