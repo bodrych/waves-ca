@@ -1,0 +1,97 @@
+body {
+	font-family: Consolas, monospace;
+	font-size: 14px;
+}
+.bordered {
+	border: 1px solid lightgray;
+	border-radius:5px;
+	padding: 10px;
+}
+input, select {
+	font-family: inherit;
+	font-size: inherit;
+}
+select, input[type=text], input[type=number], input[type=checkbox] {
+	border: 1px solid lightgray;
+}
+#app {
+	display: flex;
+}
+#header > div {
+	padding: 5px;
+}
+#params-first > div, #params-second > div, #params-third > div {
+	align-items: center;
+	padding: 5px;
+}
+#result, #input-data {
+	padding: 5px;
+	overflow-x: auto;
+	border: 1px solid lightgray;
+	margin: 5px 0px 0px 0px;
+	max-width: 90vw;
+}
+#result-wrapper, #input-data-wrapper {
+	margin: 5px;
+}
+#result-data-wrapper {
+	align-items:initial;
+}
+#footer {
+	padding: 5px;
+}
+.flex-row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	flex-wrap: wrap;
+}
+.flex-col {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+label {
+	margin: 0px 5px 0px 0px;
+}
+input, select {
+	margin: 10px;
+	padding: 5px;
+}
+.button {
+	background-color: white;
+	color: black;
+	border: 1px solid lightgray;
+	transition-duration: 0.4s;
+}
+.button:hover {
+	background-color: lightgray;
+}
+.load {
+	width: 50px;
+}
+.submit {
+	width: 200px;
+}
+table {
+	margin: 10px;
+  border-collapse: collapse;
+  /*width: 100%;*/
+}
+td, th {
+  border: 1px solid lightgray;
+  padding: 10px;
+  max-width: 300px;
+  overflow: auto;
+  white-space: nowrap;
+}
+tr:hover {
+	background-color: lightgray;
+}
+#edit-cert, #cert-list {
+	margin: 10px;
+}
+#admin {
+	align-items: flex-start;
+}
